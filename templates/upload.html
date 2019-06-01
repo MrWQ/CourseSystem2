@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+{% block script %}
+    <link rel="stylesheet" type="text/css" href="../../static/css/jquery.filer.css">
+    <link rel="stylesheet" type="text/css" href="../../static/css/jquery.filer-dragdropbox-theme.css">
+    <link rel="stylesheet" type="text/css" href="../../static/css/custom.css">
+	<script src="../../static/js/jquery-2.1.1.min.js"></script>
+    <script src="../../static/js/jquery.filer.min.js" type="text/javascript"></script>
+    <script src="../../static/js/prettify.js" type="text/javascript"></script>
+    <script src="../../static/js/custom.js" type="text/javascript"></script>
+      {% if err == 1 %}
+            <script>
+                alert( '{{ message }}' )
+                window.location.href='/course/files/'
+            </script>
+
+      {% endif %}
+{% endblock %}
+</head>
+<body>
+{% block navlist %}
+    <ul class="nav navbar-nav">
+    <li >
+        <a href="/course/index/">Home</a>
+    </li>
+    <li class="active">
+        <a href="/course/upload">Upload</a>
+    </li>
+    <li>
+        <a href="/course/files">Files</a>
+    </li>
+    <li>
+        <a href="/course/data/">Data</a>
+    </li>
+</ul>
+{% endblock %}
+{% block body %}
+
+    <div class="col-md-6" style="margin-left:25%;margin-top:10%;">
+        <form action="/course/upload/" method="post" enctype="multipart/form-data" class="text-center">
+            {% csrf_token %}
+              <input type="file" name="files[]" id="demo-fileInput-4" multiple="multiple">
+              <input type="submit" class="btn-custom green" value="Submit">
+        </form>
+    </div>
+
+{% endblock %}
+</body>
+
+</html>

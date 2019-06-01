@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>show data</title>
+{% block script %}
+<script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.min.js"></script>
+<script src="../../static/js/echarts.js"></script>
+{#    搜索框#}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="../../static/css/search-style.css">
+
+<script type="text/javascript">
+   $(document).ready(function() {
+       {#初始化#}
+       var myChart = echarts.init(document.getElementById('main'));
+       {# 展示加载动画，等加载完成后在隐藏#}
+       myChart.showLoading();
+           {#初始化类别#}
+           var categories = [];
+           categories = {{ categories|safe }}
+           console.log(categories)
+           {#初始化节点#}
+           var data = [];
+           data = {{ datas|safe }}
+              data.forEach(function (node) {
+                node.itemStyle = null;
+                node.symbolSize = 30;
+                node.value = node.symbolSize;
+                // Use random x, y
+                node.x = node.y = null;
+                node.draggable = true;
+              });
+           console.log((data))
+           {#初始化边#}
+           var links = [];
+           links = {{ links|safe }}
+             links.forEach(function (link) {
+                link.lineStyle ={
+                    width:3,
+                    {#type:'dotted',#}
+                 };
+
+              });
+           console.log(links)
+           if(categories.length>0 && data.length>0 && links.length>0){
+             {#隐藏加载动画#}
+                myChart.hideLoading();
+           }
+           option = {
+               {#标题#}
+               title: {
+                   text: '课程体系知识图谱',
+                   subtext: 'Default layout',
+                   top: 'bottom',
+                   left: 'right',
+                   show: true
+               },
+               {#全局提示框#}
+               tooltip : {
+                   confine:true,
+                    trigger: 'item',
+
+                   formatter: function(params){//触发之后返回的参数，这个函数是关键
+                       console.log('params:')
+                       console.log(params)
+                      if (params.data.category != undefined) {//如果触发节点
+                            var category_num = params.data.category;
+                          var categores = {{ categories|safe }};
+                          {#节点类别#}
+                          var category = categores[category_num].name;
+                          {#节点信息#}
+                          var nodeinfo =  params.data.nodeinfo;
+                          var  tooltip_str = '';
+                            if(category == 'Course'){
+                                    if (nodeinfo.name != undefined){
+                                        tooltip_str = tooltip_str + '课程名称: ' + nodeinfo.name + '<br>';
+                                    }
+                                    if (nodeinfo.englishName != undefined){
+                                        tooltip_str = tooltip_str +'英文名称: ' + nodeinfo.englishName+ '<br>';
+                                    }
+                                    if (nodeinfo.courseNumber != undefined){
+                                        tooltip_str = tooltip_str +'课程编号: ' + nodeinfo.courseNumber+ '<br>';
+                                    }
+                                    if (nodeinfo.appliedSpecialty != undefined){
+                                        tooltip_str = tooltip_str +'适用专业: ' + nodeinfo.appliedSpecialty+ '<br>';
+                                    }
+                                    if (nodeinfo.prerequisiteCourses != undefined){
+                                        tooltip_str = tooltip_str +'先修课程: ' + nodeinfo.prerequisiteCourses+ '<br>';
+                                    }
+                                    if (nodeinfo.courseCategory != undefined){
+                                        tooltip_str = tooltip_str +'课程类别: ' + nodeinfo.courseCategory+ '<br>';
+                                    }
+                                    if (nodeinfo.experimentalHours != undefined){
+                                        tooltip_str = tooltip_str +'实验/上机学时: ' + nodeinfo.experimentalHours+ '<br>';
+                                    }
+                                    if (nodeinfo.totalHours != undefined){
+                                        tooltip_str = tooltip_str +'总学时: ' + nodeinfo.totalHours+ '<br>';
+                                    }
+                                    if (nodeinfo.credit != undefined){
+                                        tooltip_str = tooltip_str +'学分: ' + nodeinfo.credit+ '<br>';
+                                    }
+                            }else if(category == 'TeachingObjective') {
+                                if (nodeinfo.courseName !=undefined && nodeinfo.id != undefined){
+                                    tooltip_str = tooltip_str + '节点名称: ' + nodeinfo.courseName + "-教学目标-" + nodeinfo.id + '<br>';
+                                }
+                                if (nodeinfo.contributionDegree != undefined){
+                                    tooltip_str = tooltip_str + '贡献度: ' + nodeinfo.contributionDegree + '<br>';
+                                }
+                                if (nodeinfo.describe != undefined){
+                                    tooltip_str = tooltip_str + '教学目标描述: ' + nodeinfo.describe + '<br>';
+                                }
+                                if (nodeinfo.waysToAchieve != undefined){
+                                    tooltip_str = tooltip_str + '达成途径: ' + nodeinfo.waysToAchieve + '<br>';
+                                }
+                                if (nodeinfo.mainCriteria != undefined){
+                                    tooltip_str = tooltip_str + '主要判据: ' + nodeinfo.mainCriteria + '<br>';
+                                }
+                            }else  if(category == 'IndexPoint'){
+                                if (nodeinfo.name !=undefined ){
+                                    tooltip_str = tooltip_str + '指标点: ' + nodeinfo.name + '<br>';
+                                }
+                                if (nodeinfo.describe != undefined){
+                                    tooltip_str = tooltip_str + '指标点描述: ' + nodeinfo.describe + '<br>';
+                                }
+                            }else{
+                                    tooltip_str = tooltip_str + nodeinfo.name + '<br>';
+                            }
+                        return  tooltip_str;
+                      }else {//如果触发边
+                          var source = params.data.source
+                          var target = params.data.target
+                        return '关系: '+ source + ' --> ' + target
+                      }
+                    }
+            },
+               {#图例#}
+               legend: [{
+                   {#selectedMode: 'single',#} //单选
+                   selectedMode: 'multiple', //多选
+               }],
+               animation: false,
+               {#系列，图表类型#}
+               series: [
+                   {
+                       name: '节点',
+                       type: 'graph',
+                       layout: 'force',
+                       focusNodeAdjacency: true,    //相邻节点高亮
+                       {#节点填充#}
+                       data: data,
+                       {#边填充#}
+                       links: links,
+                       {#类别填充#}
+                       categories: categories,
+                       roam: true,
+                       label: {
+                           normal: {
+                               show: true, //节点文字显示
+                               position: 'right' //显示位置
+                           }
+                       },
+                       force: {
+                           repulsion: 500
+                       }
+                   }
+               ]
+           };
+           // 使用刚指定的配置项和数据显示图表。
+           myChart.setOption(option);
+
+
+       //echarts图表点击跳转
+               	myChart.on('click', function (param){
+                   	var name=param.name;
+                    window.location.href="?keyword=" + name + '&adjacent=1';
+       			    });
+               	myChart.on('click',eConsole);
+   })
+
+
+
+    </script>
+{% endblock %}
+</head>
+<body>
+{% block navlist %}
+    <ul class="nav navbar-nav">
+    <li >
+        <a href="/course/index/">Home</a>
+    </li>
+    <li >
+        <a href="/course/upload">Upload</a>
+    </li>
+    <li>
+        <a href="/course/files">Files</a>
+    </li>
+    <li class="active">
+        <a href="/course/data/">Data</a>
+    </li>
+{#        <li>#}
+		<div class="search d7">
+		<form action="/course/data/">
+		  <input name="keyword" type="text" placeholder="搜索节点">
+		  <button type="submit"></button>
+		</form>
+		</div>
+{#</li>#}
+</ul>
+{% endblock %}
+{% block body %}
+
+     <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+    <div id="main" style="width: 1500px;height:650px;margin:auto;margin-top: 30px;">
+
+    </div>
+
+{% endblock %}
+</body>
+</html>

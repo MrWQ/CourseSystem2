@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block script %}
+{#背景和布局#}
+<link rel="stylesheet" href="../../static/css/style.css"/>
+<script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.min.js"></script>
+<link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<script>
+{#    加载背景布局#}
+    $(document).ready(function(){
+  var docWidth = $('body').width(),
+      $wrap = $('#wrap'),
+      $images = $('#wrap .hb'),
+      slidesWidth = $wrap.width();
+
+  $(window).on('resize', function(){
+    docWidth = $('body').width();
+    slidesWidth = $wrap.width();
+  })
+
+  $(document).mousemove(function(e) {
+    var mouseX = e.pageX,
+        offset = mouseX / docWidth * slidesWidth - mouseX / 2;
+
+    $images.css({
+      '-webkit-transform': 'translate3d(' + -offset + 'px,0,0)',
+              'transform': 'translate3d(' + -offset + 'px,0,0)'
+    });
+  });
+})
+</script>
+
+{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+</head>
+<body>
+{% block body %}
+<div id="wrap">
+{% for resource in resources %}
+  <a href="{{ resource.a }}" class="hb">
+    <div class="c">
+      <img src="{{ resource.img }}" alt=""/>
+      <div class="txt">
+        <h1>{{ resource.h1 }}</h1>
+        <p>{{ resource.p }}</p>
+      </div>
+    </div>
+  </a>
+  <div class="fullBg">
+    <img src="{{ resource.img }}" alt="" />
+  </div>
+{% empty %}
+    <h1>Welcome</h1>
+{% endfor %}
+</div>
+
+{% endblock %}
+</body>
+
+</html>
